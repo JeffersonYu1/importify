@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Import Result
+{% endblock %}
+
+{% block menu_items %}
+    <a class="nav-item nav-link" href="/">Home</a>
+    <a class="nav-item nav-link" href="/text">Import By Text</a>
+    <a class="nav-item nav-link" href="/link">Import By Link</a>
+    <a class="nav-item nav-link" href="/info">Info</a>
+    <a class="nav-item nav-link" href="/logout">Logout</a>
+{% endblock %}
+
+{% block main %}
+    <h1>importspotify | {{origin}} Result</h1>
+    <br>
+
+    <div id="accordion">
+        <div class="card">
+            <div class="card-header" id="headingOne">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Not Added Songs
+                    </button>
+                </h5>
+            </div>
+        
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Line</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in not_added %}
+                            <tr>
+                                <th scope="row">{{loop.index}}</th>
+                                <td>{{item}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Added Songs
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Track</th>
+                            <th scope="col">Artist</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for song in added_songs %}
+                            <tr>
+                                <th scope="row">{{loop.index}}</th>
+                                <td>{{song.name}}</td>
+                                <td>{{song.artist}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>    
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

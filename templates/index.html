@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block menu_items %}
+    <a class="nav-item nav-link active" href="/"><span class="sr-only">Home</span></a>
+    {% if session.response_data %}
+        <a class="nav-item nav-link" href="/text">Import By Text</a>
+        <a class="nav-item nav-link" href="/link">Import By Link</a>
+        <a class="nav-item nav-link" href="/info">Info</a>
+        <a class="nav-item nav-link" href="/logout">Logout</a>
+    {% else %} 
+        <a class="nav-item nav-link" href="/info">Info</a>
+        <a class="nav-item nav-link" href="/login">Log In</a>
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    <h1>importspotify | Home</h1>
+    <p>Import playlists into Spotify.</p>
+    {% if session.response_data %}
+        <p><a href="/text">Import By Text</a></p>
+        <p><a href="/link">Import By Link</a></p>
+        <p><a href="/info">Attribution & Info</a></p>
+    {% else %} 
+        <p><a href="/login">Log In</a></p>
+        <p>Import By Text</p>
+        <p>Import By Link</p>
+        <p><a href="/info">Attribution & Info</a></p>
+    {% endif %}
+    
+{% endblock %}

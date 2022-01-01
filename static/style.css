@@ -1,0 +1,44 @@
+main .form-control
+{
+    /* Override Bootstrap's 100% width for form controls */
+    width: auto;
+}
+
+main
+{
+    /* Scroll horizontally as needed */
+    overflow-x: auto;
+
+    /* Center contents */
+    text-align: center;
+}
+
+main img
+{
+    /* Constrain images on small screens */
+    max-width: 100%;
+}
+
+.navbar-brand
+{
+    padding: 0 0 0 1em;
+}
+
+.spotify-green
+{
+    color: #1DB954 !important;
+}
+
+.spotify-green-button
+{
+    background-color: #1DB954 !important;
+    border-color: #1DB954;
+    color: #fff;
+}
+
+.spotify-green-button:hover
+{
+    background-color: #189e47 !important;
+    border-color: #189e47;
+    color: #fff;
+}

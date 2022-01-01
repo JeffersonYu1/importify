@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Info
+{% endblock %}
+
+{% block menu_items %}
+    <a class="nav-item nav-link" href="/">Home</a>
+    {% if session.response_data %}
+        <a class="nav-item nav-link" href="/text">Import By Text</a>
+        <a class="nav-item nav-link" href="/link">Import By Link</a>
+        <a class="nav-item nav-link active" href="/info"><span class="sr-only">Info</span></a>
+        <a class="nav-item nav-link" href="/logout">Logout</a>
+    {% else %} 
+        <a class="nav-item nav-link active" href="/info"><span class="sr-only">Info</span></a>
+        <a class="nav-item nav-link" href="/login">Log In</a>
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    <h1>importspotify | Info</h1>
+    <p>
+        Project inspired by <a href="https://cs50.harvard.edu/" target="_blank">CS50</a>.
+        <br>
+        Python library for Spotify Web API provided by <a href="https://spotipy.readthedocs.io/en/2.19.0/" target="_blank">Spotipy</a>.
+        <br>
+        Authorization flow guided by <a href="https://github.com/drshrey/spotify-flask-auth-example" target="_blank">drshrey/spotify-flask-auth-example</a>.
+    </p>
+
+{% endblock %}
