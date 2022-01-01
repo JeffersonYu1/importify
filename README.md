@@ -1,5 +1,7 @@
 # importspotify
-Web app to ease creation of Spotify playlists by importing from other streaming applications or users' playlists. Written by Jefferson Yu.
+#### Video Demo:  https://www.youtube.com/watch?v=PoNl7INLp-E
+Created by Fu-Yao (Jefferson) Yu from Austin, TX. Fall 2021 CS50x.
+Web app to ease creation of Spotify playlists by importing from other streaming applications or users' playlists.
 
 ## About the Project
 ### Motivation
