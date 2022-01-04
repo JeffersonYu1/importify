@@ -19,9 +19,15 @@ main img
     max-width: 100%;
 }
 
-.navbar-brand
+/* .navbar-brand
 {
     padding: 0 0 0 1em;
+} */
+
+nav.navbar
+{
+    padding-left: 1em;
+    padding-right: 1em;
 }
 
 .spotify-green
@@ -41,4 +47,16 @@ main img
     background-color: #189e47 !important;
     border-color: #189e47;
     color: #fff;
+}
+
+a.nav-item
+{
+    transition: all 0.3s;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+
+a.nav-item:hover
+{
+    border-color: rgba(0,0,0,.7);
 }

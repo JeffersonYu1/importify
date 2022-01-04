@@ -1,7 +1,10 @@
-import os
-import spotipy
+import base64
+import html
 import json
+import os
 import requests
+import spotipy
+import time
 import urllib.parse
 
 from flask import Flask, flash, redirect, render_template, request, session
@@ -23,7 +26,7 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 CLIENT_SIDE_URL = "http://127.0.0.1"
 PORT = 5000
 REDIRECT_URI = "{}:{}/callback/q".format(CLIENT_SIDE_URL, PORT)
-SCOPE = "user-library-read user-library-modify playlist-modify-private playlist-modify-public"
+SCOPE = "user-library-read user-library-modify playlist-modify-private playlist-modify-public ugc-image-upload"
 SHOW_DIALOG_bool = True
 
 auth_query_parameters = {
@@ -142,9 +145,10 @@ def import_by_link():
             return render_template("link.html", error="Invalid playlist URL.")
         
         # Original playlist data (may be written if user has specifications)
-        playlist_name = results['name']
-        playlist_desc = results['description']
-        playlist_visibility = results['public']        
+        playlist_name = html.unescape(results['name'])
+        playlist_desc = html.unescape(results['description'])
+        playlist_visibility = results['public']
+        playlist_cover_url = results['images'][0]['url']     
         
         # Get form data for playlist        
         if request.form.get("playlist_name"):
@@ -176,6 +180,7 @@ def import_by_link():
 
         # Get playlist_uri (similar to id) of new playlist
         playlist_uri = playlist_response['uri']
+        sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
 
         tracks = results['tracks']['items']
         # print(results)
@@ -189,69 +194,59 @@ def import_by_link():
                 results = sp.next(results)
                 # print(results)
                 tracks.extend(results['items'])
-
-        # try:
-        #     while results['next']:
-        #         results = sp.next(results)
-        #         tracks.extend(results['tracks']['items'])
-
-        # except Exception as str_error:
-        #     return render_template("link.html", error=str_error)
         
+        num_bins = 100
 
-        # tracks are stored here results['tracks']['items'][0 (index)]['track']['uri']
-        track_uris = []
-        for track in tracks:
-            track_uris.append(track['track']['uri'])
-        
+        # Tracks Data (uri, name, artists)
+        tracks_data = []
         added_songs = []
-        not_added = []
+        not_added = []    
 
-        # If there is at least one URI in track_uris
-        if not len(track_uris) == 0:
+        for track in tracks:
+            if 'track' in track and track['track'] and 'uri' in track['track'] and track['track']['uri']:
+                tracks_data.append(
+                    {
+                        'uri': track['track']['uri'],
+                        'name': track['track']['name'],
+                        'artist': track['track']['artists'][0]['name']
+                    }
+                )
+
+        # If there is at least one element in tracks_data
+        if not len(tracks_data) == 0:
             # Keep a list of added track_uris
             temp_track_uris = []
-            counter = 0
 
-            while not len(track_uris) == 0:
-                for try_count in range(0, 6):  # try 6 times
-                    try:
-                        this_uri = track_uris[0]
+            while not len(tracks_data) == 0:
+                this_uri = tracks_data[0]['uri']
 
-                        # Search for the song
-                        results = sp.track(this_uri)
-                        # print(results)
+                if "spotify:local" in this_uri:
+                    not_added.append(this_uri)
+                
+                else:
+                    temp_track_uris.append(this_uri)
+                    added_songs.append(
+                        {
+                            'name': tracks_data[0]['name'],
+                            'artist': tracks_data[0]['artist']
+                        }
+                    )
 
-                        # If a match is found,
-                        if results and len(results) > 0:
-                            # then add it to the list of trackIDs (if not already there)
-                            if this_uri not in temp_track_uris:
-                                added_songs.append(
-                                    {
-                                        'name': results['name'],
-                                        'artist': results['artists'][0]['name']
-                                    }
-                                )
-                                print(results['name'])
-                                temp_track_uris.append(this_uri)
-                        
-                        else:
-                            not_added.append(this_uri)
-                        
-                        if len(temp_track_uris) >= 5 or len(track_uris) == 1:
-                            print()
-                            print('adding last {} song(s)...'.format(len(temp_track_uris)))
+                tracks_data.pop(0)
+
+                if len(temp_track_uris) == num_bins or len(tracks_data) == 0: 
+                    for try_count in range(0, 6):  # try 6 times
+                        try:
                             sp.user_playlist_add_tracks(user_id, playlist_uri, temp_track_uris)
-                            print('last {} song(s) successfully added'.format(len(temp_track_uris)))
-                            temp_track_uris.clear()
-                            print()
-
-                        track_uris.pop(0)
-                        break
-                    except Exception as str_error:
-                        print(str_error)
-                        sleep(2)
-                        pass
+                            break
+                        except Exception as str_error:
+                            print(str_error)
+                            if try_count == 5:
+                                raise RuntimeError("Error while adding tracks.")
+                            sleep(1)
+                            pass
+                    
+                    temp_track_uris.clear()
 
         return render_template("result.html", origin="Import By Link", added_songs=added_songs, not_added=not_added)
 
@@ -287,8 +282,6 @@ def import_by_text():
             playlist_visibility = "False"
         bool(playlist_visibility.strip())
 
-        print(playlist_paste)
-
         # Generate playlist args based on form responses
         playlist_args = {
             "name": playlist_name,
@@ -313,6 +306,8 @@ def import_by_text():
         added_songs = []
         not_added = []
 
+        num_bins = 100
+
         # If there is at least one line in the paste
         if not len(paste_list) == 0:
             # Keep a list of added track_uris
@@ -320,42 +315,51 @@ def import_by_text():
             counter = 0
 
             while not len(paste_list) == 0:
+                line = paste_list[0]
+
+                # Search for the song
                 for try_count in range(0, 6):  # try 6 times
                     try:
-                        line = paste_list[0]
-
-                        # Search for the song
                         results = sp.search(line, type="track", limit="1")
-
-                        # If a match is found,
-                        if len(results['tracks']['items']) > 0:
-                            # then add it to the list of trackIDs (if not already there)
-                            if results['tracks']['items'][0]['uri'] not in track_uris:
-                                added_songs.append(
-                                    {
-                                        'name': results['tracks']['items'][0]['name'],
-                                        'artist': results['tracks']['items'][0]['artists'][0]['name']
-                                    }
-                                )
-                                print(results['tracks']['items'][0]['name'])
-                                track_uris.append(results['tracks']['items'][0]['uri'])
-                        
-                        else:
-                            not_added.append(line)
-                        
-                        if len(track_uris) >= 5 or len(paste_list) == 1:
-                            print()
-                            print('adding last {} song(s)...'.format(len(track_uris)))
-                            sp.user_playlist_add_tracks(user_id, playlist_uri, track_uris)
-                            print('last {} song(s) successfully added'.format(len(track_uris)))
-                            track_uris.clear()
-                            print()
-
-                        paste_list.pop(0)
                         break
                     except Exception as str_error:
+                        print(str_error)
+                        if try_count == 5:
+                            print("Could not search for song. Continuing...")
                         sleep(2)
                         pass
+
+                # If a match is found,
+                if len(results['tracks']['items']) > 0:
+                    # then add it to the list of trackIDs (if not already there)
+                    if results['tracks']['items'][0]['uri'] not in track_uris:
+                        added_songs.append(
+                            {
+                                'name': results['tracks']['items'][0]['name'],
+                                'artist': results['tracks']['items'][0]['artists'][0]['name']
+                            }
+                        )
+                        # print(results['tracks']['items'][0]['name'])
+                        track_uris.append(results['tracks']['items'][0]['uri'])
+                
+                else:
+                    not_added.append(line)
+                
+                if len(track_uris) == num_bins or len(paste_list) == 1:
+                    for try_count in range(0, 6):  # try 6 times
+                        try:
+                            sp.user_playlist_add_tracks(user_id, playlist_uri, track_uris)
+                            track_uris.clear()
+                            break
+                        except Exception as str_error:
+                            print(str_error)
+                            if try_count == 5:
+                                raise RuntimeError("Error while adding tracks.")
+                            sleep(2)
+                            pass
+
+                paste_list.pop(0)
+                break
 
         return render_template("result.html", origin="Import By Text", added_songs=added_songs, not_added=not_added)
 
