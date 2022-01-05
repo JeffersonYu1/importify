@@ -2,6 +2,7 @@ import base64
 import html
 import json
 import os
+import re
 import requests
 import spotipy
 import time
@@ -315,7 +316,12 @@ def import_by_text():
             counter = 0
 
             while not len(paste_list) == 0:
-                line = paste_list[0]
+                line = line_parse(paste_list[0])
+                print("line:", line)
+
+                if line.replace(' ', '') == '':
+                    paste_list.pop(0)
+                    continue
 
                 # Search for the song
                 for try_count in range(0, 6):  # try 6 times
@@ -339,7 +345,7 @@ def import_by_text():
                                 'artist': results['tracks']['items'][0]['artists'][0]['name']
                             }
                         )
-                        # print(results['tracks']['items'][0]['name'])
+                        print(results['tracks']['items'][0]['name'])
                         track_uris.append(results['tracks']['items'][0]['uri'])
                 
                 else:
@@ -359,7 +365,6 @@ def import_by_text():
                             pass
 
                 paste_list.pop(0)
-                break
 
         return render_template("result.html", origin="Import By Text", added_songs=added_songs, not_added=not_added)
 
@@ -378,6 +383,33 @@ def login():
 def logout():
     session.clear()
     return redirect("/")
+
+
+def line_parse(line):
+    # dictionary of string:replacement
+    replace = {
+        ', ': ',',
+        ',': ' ',
+        ' - ': '-',
+        ' – ': '-',
+        ' — ': '-',
+        '-': ' ',
+        '.ncm': '',
+        '.mp3': '',
+        '.m4a': '',
+        '.aac': '',
+        '.flac': '',
+        '.mp4': '',
+        '.wav': '',
+        '.wma': ''
+    }
+
+    for original, replacement in replace.items():
+        line = line.replace(original, replacement)
+    
+    line = re.sub('^\s*\d+\.', '', line)
+    
+    return line
 
 
 if __name__ == "__main__":
