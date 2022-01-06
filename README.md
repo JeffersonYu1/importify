@@ -1,4 +1,4 @@
-# importspotify
+# importify
 #### Video Demo:  https://www.youtube.com/watch?v=PoNl7INLp-E
 Created by Fu-Yao (Jefferson) Yu from Austin, TX. Fall 2021 CS50x.
 Web app to ease creation of Spotify playlists by importing from other streaming applications or users' playlists.
@@ -8,13 +8,13 @@ Web app to ease creation of Spotify playlists by importing from other streaming 
 This project started off as a [CS50x](https://cs50.harvard.edu/x/) final project. It is difficult to import playlists and songs from external applications into Spotify, as well as to copy other users' playlists into a personal library to make modifications. As a result, this project was built to alleviate part of the difficulty.
 
 ### Features
-Using importspotify, users can log in to their Spotify accounts to import playlists by pasting track names into a text box, or by providing a Spotify playlist link to copy. 
+Using importify, users can log in to their Spotify accounts to import playlists by pasting track names into a text box, or by providing a Spotify playlist link to copy. 
 
 For instance,
-![Screenshot 2021-12-31 at 20-32-31 Import By Text importspotify](https://user-images.githubusercontent.com/43518772/147842842-0a87ce73-1279-4637-8434-d5c91e2a2720.png)
+![Screenshot 2021-12-31 at 20-32-31 Import By Text importify](https://user-images.githubusercontent.com/43518772/147842842-0a87ce73-1279-4637-8434-d5c91e2a2720.png)
 
 and
-![Screenshot 2021-12-31 at 20-32-39 Import By Link importspotify](https://user-images.githubusercontent.com/43518772/147842844-6ed440d6-d4bb-405f-8659-256cb37b6799.png)
+![Screenshot 2021-12-31 at 20-32-39 Import By Link importify](https://user-images.githubusercontent.com/43518772/147842844-6ed440d6-d4bb-405f-8659-256cb37b6799.png)
 
 ### Steps
 * This project was built using the VSCode IDE. At first, I considered using the CS50 IDE because of my familiarity with it, but I wanted to challenge myself and explore the an industry-standard environment.
@@ -30,7 +30,7 @@ and
 
 ## Contact
 * Jefferson Yu - [fu.yao.yu at hotmail dot com](mailto:fu.yao.yu@hotmail.com)
-* Project link: https://github.com/JeffersonYu1/importspotify
+* Project link: https://github.com/JeffersonYu1/importify
 
 ## Acknowledgments
 * [CS50x](https://cs50.harvard.edu/x/)

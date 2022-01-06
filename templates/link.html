@@ -17,8 +17,16 @@
     <br>
     
     {% if error %}
-        <p style="color:red">{{error}}</p>
+        <p id="error_message" style="color:red">{{error}}</p>
     {% endif %}
+
+    <p id="display_message" style="color:blue; display: none"></p>
+
+    <p id="instructions">
+        Import a public playlist into your own library with a Spotify playlist link.
+        <br>
+        Format: https://open.spotify.com/playlist/PLAYLIST-ID
+    </p>
 
     <div class="container">
         <div class="row justify-content-center">
@@ -44,7 +52,7 @@
                                 <option value="False">Private</option>
                             </select>
                                             
-                            <button type="submit" class="btn spotify-green-button" style="width:100%">Import!</button>
+                            <button type="submit" class="btn spotify-green-button" style="width:100%" onclick="loading_message()">Import!</button>
                         </form>
                     </div>
                 </div>

@@ -24,9 +24,7 @@ API_VERSION = "v1"
 SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 
 # Server-side Parameters
-CLIENT_SIDE_URL = "http://127.0.0.1"
-PORT = 5000
-REDIRECT_URI = "{}:{}/callback/q".format(CLIENT_SIDE_URL, PORT)
+REDIRECT_URI = "{}/callback/q".format(os.environ.get("SPOTIPY_REDIRECT_URL"))
 SCOPE = "user-library-read user-library-modify playlist-modify-private playlist-modify-public ugc-image-upload"
 SHOW_DIALOG_bool = True
 
@@ -65,8 +63,8 @@ if not os.environ.get("SPOTIPY_CLIENT_ID"):
 if not os.environ.get("SPOTIPY_CLIENT_SECRET"):
     raise RuntimeError("SPOTIPY_CLIENT_SECRET not set")
 
-if not os.environ.get("SPOTIPY_REDIRECT_URI"):
-    raise RuntimeError("SPOTIPY_REDIRECT_URI not set")
+if not os.environ.get("SPOTIPY_REDIRECT_URL"):
+    raise RuntimeError("SPOTIPY_REDIRECT_URL not set")
 
 # Require login on certain pages
 def login_required(f):
@@ -265,12 +263,12 @@ def import_by_text():
         # Get form data for playlist
         playlist_name = request.form.get("playlist_name")
         if not playlist_name:
-            playlist_name = "importspotify playlist"
+            playlist_name = "importify playlist"
         playlist_name.strip()
 
         playlist_desc = request.form.get("playlist_desc")
         if not playlist_desc:
-            playlist_desc = "playlist created with importspotify"
+            playlist_desc = "playlist created with importify"
         playlist_desc.strip()
 
         playlist_paste = request.form.get("playlist_paste")
