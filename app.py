@@ -141,7 +141,7 @@ def import_by_link():
             results = sp.playlist(playlist_original_URI)
 
         except Exception as str_error:
-            return render_template("link.html", error="Invalid playlist URL.")
+            return render_template("link.html", error=str_error)
         
         # Original playlist data (may be written if user has specifications)
         playlist_name = html.unescape(results['name'])
@@ -241,6 +241,7 @@ def import_by_link():
                         except Exception as str_error:
                             print(str_error)
                             if try_count == 5:
+                                return render_template("link.html", error=str_error)
                                 raise RuntimeError("Error while adding tracks.")
                             sleep(1)
                             pass
@@ -358,6 +359,7 @@ def import_by_text():
                         except Exception as str_error:
                             print(str_error)
                             if try_count == 5:
+                                return render_template("text.html", error=str_error)
                                 raise RuntimeError("Error while adding tracks.")
                             sleep(2)
                             pass
