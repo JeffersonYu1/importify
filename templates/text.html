@@ -1,61 +1,50 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} {% block title %} Import By Text {% endblock %} {% block menu_items %}
+<a class="nav-item nav-link" href="/">Home</a>
+<a class="nav-item nav-link active" href="/text"><span class="sr-only">Import By Text</span></a>
+<a class="nav-item nav-link" href="/link">Import By Link</a>
+<a class="nav-item nav-link" href="/info">Info</a>
+<a class="nav-item nav-link" href="/logout">Logout</a> {% endblock %} {% block main %}
+<h1>importify | Import By Text</h1>
+<br> {% if error %}
+<p id="error_message" style="color:red">{{error}}</p>
+{% endif %}
 
-{% block title %}
-    Import By Text
-{% endblock %}
+<p id="display_message" style="color:blue; display: none"></p>
 
-{% block menu_items %}
-    <a class="nav-item nav-link" href="/">Home</a>
-    <a class="nav-item nav-link active" href="/text"><span class="sr-only">Import By Text</span></a>
-    <a class="nav-item nav-link" href="/link">Import By Link</a>
-    <a class="nav-item nav-link" href="/info">Info</a>
-    <a class="nav-item nav-link" href="/logout">Logout</a>
-{% endblock %}
+<p id="instructions">
+    Import a playlist by pasting song names, one on each line, into the box below.
+</p>
 
-{% block main %}
-    <h1>importify | Import By Text</h1>
-    <br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card text-center mx-auto" style="width:100%">
+                <div class="card-body">
+                    <form action="/text" method="post">
+                        <div class="form-group">
+                            <input type="text" style="width:100%" class="form-control mx-auto my-1" id="playlist_name" name="playlist_name" placeholder="Playlist Name">
+                        </div>
 
-    {% if error %}
-        <p id="error_message" style="color:red">{{error}}</p>
-    {% endif %}
+                        <div class="form-group">
+                            <textarea style="width:100%" class="form-control mx-auto my-1" id="playlist_desc" name="playlist_desc" placeholder="Playlist Description" rows="2"></textarea>
+                        </div>
 
-    <p id="display_message" style="color:blue; display: none"></p>
+                        <div class="form-group">
+                            <textarea style="width:100%" class="form-control mx-auto my-1" id="playlist_paste" name="playlist_paste" placeholder="Paste Songs Here, &#10;With Each Song Title &#10;On A New Line" rows="4"></textarea>
+                        </div>
 
-    <p id="instructions">
-        Import a playlist by pasting song names, one on each line, into the box below.
-    </p>
-
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-8">
-                <div class="card text-center mx-auto" style="width:100%">
-                    <div class="card-body">
-                        <form action="/text" method="post">
-                            <div class="form-group">
-                                <input type="text" style="width:100%" class="form-control mx-auto my-1" id="playlist_name" name="playlist_name" placeholder="Playlist Name">
-                            </div>
-                    
-                            <div class="form-group">
-                                <textarea style="width:100%" class="form-control mx-auto my-1"  id="playlist_desc" name="playlist_desc" placeholder="Playlist Description" rows="2"></textarea>
-                            </div>
-                    
-                            <div class="form-group">
-                                <textarea style="width:100%" class="form-control mx-auto my-1" id="playlist_paste" name="playlist_paste" placeholder="Paste Songs Here,&#10;With Each Song Title&#10;On A New Line" rows="4"></textarea>
-                            </div>
-                    
-                            <select class="form-select mx-auto my-1" name="playlist_visibility">
+                        <select class="form-select mx-auto my-1" name="playlist_visibility">
                                 <option disabled="" selected="">Playlist Visibility</option>
                                 <option value="True">Public</option>
                                 <option value="False">Private</option>
                             </select>
-                                            
-                            <button type="submit" class="btn spotify-green-button" style="width:100%" onclick="loading_message()">Import!</button>
-                        </form>
-                    </div>
+
+                        <button type="submit" class="btn spotify-green-button" style="width:100%" onclick="loading_message()">Import!</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    
+</div>
+
 {% endblock %}

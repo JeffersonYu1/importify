@@ -1,4 +1,5 @@
 import base64
+import datetime
 import html
 import json
 import os
@@ -77,6 +78,8 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if session.get("response_data") is None:
             return redirect("/")
+        elif datetime.datetime.now() >= session.get("response_data").get("expire_datetime"):
+            return redirect("/")
         return f(*args, **kwargs)
     return decorated_function
 
@@ -96,11 +99,15 @@ def callback():
 
     # Auth Step 3: Tokens are Returned to Application
     response_data = json.loads(post_request.text)
+
+    # print(response_data)
     # access_token = response_data["access_token"]
     # refresh_token = response_data["refresh_token"]
     # token_type = response_data["token_type"]
     # expires_in = response_data["expires_in"]
 
+    response_data["expire_datetime"] = datetime.datetime.now() + datetime.timedelta(
+        seconds=max(response_data["expires_in"] - 100, 0))
     session["response_data"] = response_data
     
     return redirect("/")
