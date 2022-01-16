@@ -9,11 +9,10 @@ import spotipy
 import time
 import urllib.parse
 
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, Response, request, session, stream_with_context
 from flask_session import Session
 from functools import wraps
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from tempfile import mkdtemp
 from time import sleep
 
@@ -79,6 +78,7 @@ def login_required(f):
         if session.get("response_data") is None:
             return redirect("/")
         elif datetime.datetime.now() >= session.get("response_data").get("expire_datetime"):
+            session["status"] = "expired"
             return redirect("/")
         return f(*args, **kwargs)
     return decorated_function
@@ -108,6 +108,7 @@ def callback():
 
     response_data["expire_datetime"] = datetime.datetime.now() + datetime.timedelta(
         seconds=max(response_data["expires_in"] - 100, 0))
+    session["status"] = "active"
     session["response_data"] = response_data
     
     return redirect("/")
@@ -186,7 +187,12 @@ def import_by_link():
 
         # Get playlist_uri (similar to id) of new playlist
         playlist_uri = playlist_response['uri']
-        sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
+        try:
+            sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
+        except Exception as str_error:
+            print("playlist cover not uploaded.")
+            print(str_error)
+            pass
 
         tracks = results['tracks']['items']
         # print(results)
@@ -265,115 +271,119 @@ def import_by_link():
 @login_required
 def import_by_text():
     if request.method == "POST":
-        # Make Spotipy object with access token
-        sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
+        def generate():
+            # Make Spotipy object with access token
+            sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
 
-        # Get form data for playlist
-        playlist_name = request.form.get("playlist_name")
-        if not playlist_name:
-            playlist_name = "importify playlist"
-        playlist_name.strip()
+            # Get form data for playlist
+            playlist_name = request.form.get("playlist_name")
+            if not playlist_name:
+                playlist_name = "importify playlist"
+            playlist_name.strip()
 
-        playlist_desc = request.form.get("playlist_desc")
-        if not playlist_desc:
-            playlist_desc = "playlist created with importify"
-        playlist_desc.strip()
+            playlist_desc = request.form.get("playlist_desc")
+            if not playlist_desc:
+                playlist_desc = "playlist created with importify"
+            playlist_desc.strip()
 
-        playlist_paste = request.form.get("playlist_paste")
-        if not playlist_paste:
-            playlist_paste = ""
-        playlist_paste.strip()
+            playlist_paste = request.form.get("playlist_paste")
+            if not playlist_paste:
+                playlist_paste = ""
+            playlist_paste.strip()
 
-        playlist_visibility = request.form.get("playlist_visibility")
-        if playlist_visibility not in ["True", "False", True, False]:
-            playlist_visibility = "False"
-        bool(playlist_visibility.strip())
+            playlist_visibility = request.form.get("playlist_visibility")
+            if playlist_visibility not in ["True", "False", True, False]:
+                playlist_visibility = "False"
+            bool(playlist_visibility.strip())
 
-        # Generate playlist args based on form responses
-        playlist_args = {
-            "name": playlist_name,
-            "public": playlist_visibility,
-            "collaborative": False,
-            "description": playlist_desc
-        }
+            # Generate playlist args based on form responses
+            playlist_args = {
+                "name": playlist_name,
+                "public": playlist_visibility,
+                "collaborative": False,
+                "description": playlist_desc
+            }
 
-        # Get user_id based on Spotipy object
-        user_id = sp.me()['id']
-        playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
-        
-        # Ensure new playlist was created
-        if not playlist_response:
-            raise RuntimeError("New playlist could not be created")
+            # Get user_id based on Spotipy object
+            user_id = sp.me()['id']
+            playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
+            
+            # Ensure new playlist was created
+            if not playlist_response:
+                raise RuntimeError("New playlist could not be created")
 
-        # Get playlist_uri (similar to id) of playlist
-        playlist_uri = playlist_response['uri']
-        
-        # Convert pasted song data into array
-        paste_list = playlist_paste.splitlines()
-        added_songs = []
-        not_added = []
+            # Get playlist_uri (similar to id) of playlist
+            playlist_uri = playlist_response['uri']
+            
+            # Convert pasted song data into array
+            paste_list = playlist_paste.splitlines()
+            added_songs = []
+            not_added = []
 
-        num_bins = 100
+            num_bins = 100
 
-        # If there is at least one line in the paste
-        if not len(paste_list) == 0:
-            # Keep a list of added track_uris
-            track_uris = []
-            counter = 0
+            # If there is at least one line in the paste
+            if not len(paste_list) == 0:
+                # Keep a list of added track_uris
+                track_uris = []
+                counter = 0
 
-            while not len(paste_list) == 0:
-                line = line_parse(paste_list[0])
-                print("line:", line)
+                while not len(paste_list) == 0:
+                    line = line_parse(paste_list[0])
+                    # print("line:", line)
 
-                if line.replace(' ', '') == '':
-                    paste_list.pop(0)
-                    continue
+                    if line.replace(' ', '') == '':
+                        paste_list.pop(0)
+                        continue
 
-                # Search for the song
-                for try_count in range(0, 6):  # try 6 times
-                    try:
-                        results = sp.search(line, type="track", limit="1")
-                        break
-                    except Exception as str_error:
-                        print(str_error)
-                        if try_count == 5:
-                            print("Could not search for song. Continuing...")
-                        sleep(2)
-                        pass
-
-                # If a match is found,
-                if len(results['tracks']['items']) > 0:
-                    # then add it to the list of trackIDs (if not already there)
-                    if results['tracks']['items'][0]['uri'] not in track_uris:
-                        added_songs.append(
-                            {
-                                'name': results['tracks']['items'][0]['name'],
-                                'artist': results['tracks']['items'][0]['artists'][0]['name']
-                            }
-                        )
-                        print(results['tracks']['items'][0]['name'])
-                        track_uris.append(results['tracks']['items'][0]['uri'])
-                
-                else:
-                    not_added.append(line)
-                
-                if len(track_uris) == num_bins or len(paste_list) == 1:
+                    # Search for the song
                     for try_count in range(0, 6):  # try 6 times
                         try:
-                            sp.user_playlist_add_tracks(user_id, playlist_uri, track_uris)
-                            track_uris.clear()
+                            results = sp.search(line, type="track", limit="1")
                             break
                         except Exception as str_error:
                             print(str_error)
                             if try_count == 5:
-                                return render_template("text.html", error=str_error)
-                                raise RuntimeError("Error while adding tracks.")
+                                print("Could not search for song. Continuing...")
                             sleep(2)
                             pass
 
-                paste_list.pop(0)
+                    # If a match is found,
+                    if len(results['tracks']['items']) > 0:
+                        # then add it to the list of trackIDs (if not already there)
+                        if results['tracks']['items'][0]['uri'] not in track_uris:
+                            yield("0A3B1" + results['tracks']['items'][0]['name'] +
+                                "0B4C" + results['tracks']['items'][0]['artists'][0]['name'])
+                            # added_songs.append(
+                            #     {
+                            #         'name': results['tracks']['items'][0]['name'],
+                            #         'artist': results['tracks']['items'][0]['artists'][0]['name']
+                            #     }
+                            # )
+                            # print(results['tracks']['items'][0]['name'])
+                            track_uris.append(results['tracks']['items'][0]['uri'])
+                    
+                    else:
+                        yield("0A3B0" + str(line))
+                        # not_added.append(line)
+                    
+                    if len(track_uris) == num_bins or len(paste_list) == 1:
+                        for try_count in range(0, 6):  # try 6 times
+                            try:
+                                sp.user_playlist_add_tracks(user_id, playlist_uri, track_uris)
+                                track_uris.clear()
+                                break
+                            except Exception as str_error:
+                                print(str_error)
+                                if try_count == 5:
+                                    return render_template("text.html", error=str_error)
+                                sleep(2)
+                                pass
 
-        return render_template("result.html", origin="Import By Text", added_songs=added_songs, not_added=not_added)
+                    paste_list.pop(0)
+
+        songs_string = generate()
+        return Response(stream_with_context(stream_template("result2.html", origin="Import By Text", songs_string=songs_string)))
 
     else:
         return render_template("text.html")
@@ -417,6 +427,14 @@ def line_parse(line):
     line = re.sub('^\s*\d+\.', '', line)
     
     return line
+
+
+def stream_template(template_name, **context):
+    app.update_template_context(context)
+    t = app.jinja_env.get_template(template_name)
+    rv = t.stream(context)
+    rv.disable_buffering()
+    return rv
 
 
 if __name__ == "__main__":

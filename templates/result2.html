@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+<!-- {% block customScripts %}
+    <link rel="stylesheet" href="/static/bootstrap-table.min.css">
+
+    <script src="/static/tableExport.min.js"></script>
+    <script src="/static/jspdf.min.js"></script>
+    <script src="/static/jspdf.plugin.autotable.js"></script>
+    <script src="/static/bootstrap-table.min.js"></script>
+    <script src="/static/bootstrap-table-export.min.js"></script>
+{% endblock %} -->
+
+{% block title %}
+    Import Result
+{% endblock %}
+
+{% block menu_items %}
+    <a class="nav-item nav-link" href="/">Home</a>
+    <a class="nav-item nav-link" href="/text">Import By Text</a>
+    <a class="nav-item nav-link" href="/link">Import By Link</a>
+    <a class="nav-item nav-link" href="/info">Info</a>
+    <a class="nav-item nav-link" href="/logout">Logout</a>
+{% endblock %}
+
+
+{% block main %}
+    <h1>importify | {{origin}} Result</h1>
+    <br>
+
+    <div class="card">
+        <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+                Import Details
+            </h5>
+        </div>
+    
+        <div class="card-body">
+            <!-- <style>
+                #resultsToolbar {
+                    margin: 0;
+                }
+            </style>
+            
+            <div id="resultsToolbar" class="select">
+                <select class="form-control">
+                <option value="">Export Basic</option>
+                <option value="all">Export All</option>
+                <option value="selected">Export Selected</option>
+                </select>
+            </div> -->
+            
+            <table id="resultTable"
+                class="table table-striped">
+
+                <thead>
+                    <tr>
+                        <th scope="col" data-field="index">#</th>
+                        <th scope="col" data-field="title" data-filter-control="input">Title</th>
+                        <th scope="col" data-field="artist" data-filter-control="input">Artist</th>
+                        <th scope="col" data-field="select" data-filter-control="select">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set counter = namespace(value=1) %}
+                    {% for item in songs_string %}
+                        {% if "0A3B0" in item %}
+                            <tr>
+                                <th scope="row"></th>
+                                <td>{{item[5:]}}</td>
+                                <td></td>
+                                <td>Not Added</td>
+                            </tr>
+                        {% elif "0A3B1" in item %}
+                            <tr>
+                                <th scope="row">{{counter.value}}</th>
+                                {% set tempList = item.split("0B4C") %}
+                                <td>{{tempList[0][5:]}}</td>
+                                <td>{{tempList[1]}}</td>
+                                <td>Added</td>
+                            </tr>
+                        {% set counter.value = counter.value + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}
