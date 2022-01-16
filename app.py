@@ -128,140 +128,145 @@ def info():
 @login_required
 def import_by_link():
     if request.method == "POST":
-        # Make Spotipy object with access token
-        sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
+        def generate():
+            # Make Spotipy object with access token
+            sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
 
-        # Get desired playlist link from form data
-        playlist_link = request.form.get("playlist_link")
-        if not playlist_link:
-            return render_template("link.html", error="No playlist link specified.")
-        playlist_link.strip()
+            # Get desired playlist link from form data
+            playlist_link = request.form.get("playlist_link")
+            if not playlist_link:
+                return render_template("link.html", error="No playlist link specified.")
+            playlist_link.strip()
 
-        # Convert URL into URI
-        playlist_original_URI = playlist_link
-        for original, replacement in {"https://":"", "http://":"", "open.": "", ".com": "", "/":":"}.items():
-            playlist_original_URI = playlist_original_URI.replace(original, replacement)
-        playlist_original_URI = playlist_original_URI.split("?")[0]
-        # print(playlist_URI)
+            # Convert URL into URI
+            playlist_original_URI = playlist_link
+            for original, replacement in {"https://":"", "http://":"", "open.": "", ".com": "", "/":":"}.items():
+                playlist_original_URI = playlist_original_URI.replace(original, replacement)
+            playlist_original_URI = playlist_original_URI.split("?")[0]
+            # print(playlist_URI)
 
-        # Get attributes of playlist
-        try:
-            results = sp.playlist(playlist_original_URI)
+            # Get attributes of playlist
+            try:
+                results = sp.playlist(playlist_original_URI)
 
-        except Exception as str_error:
-            return render_template("link.html", error=str_error)
-        
-        # Original playlist data (may be written if user has specifications)
-        playlist_name = html.unescape(results['name'])
-        playlist_desc = html.unescape(results['description'])
-        playlist_visibility = results['public']
-        playlist_cover_url = results['images'][0]['url']     
-        
-        # Get form data for playlist        
-        if request.form.get("playlist_name"):
-            playlist_name = request.form.get("playlist_name")
-        playlist_name.strip()
+            except Exception as str_error:
+                return render_template("link.html", error=str_error)
+            
+            # Original playlist data (may be written if user has specifications)
+            playlist_name = html.unescape(results['name'])
+            playlist_desc = html.unescape(results['description'])
+            playlist_visibility = results['public']
+            playlist_cover_url = results['images'][0]['url']     
+            
+            # Get form data for playlist        
+            if request.form.get("playlist_name"):
+                playlist_name = request.form.get("playlist_name")
+            playlist_name.strip()
 
-        if request.form.get("playlist_desc"):
-            playlist_desc = request.form.get("playlist_desc")
-        playlist_desc.strip()
+            if request.form.get("playlist_desc"):
+                playlist_desc = request.form.get("playlist_desc")
+            playlist_desc.strip()
 
-        if request.form.get("playlist_visibility") in ["True", "False"]:
-            playlist_visibility = bool(request.form.get("playlist_visibility").strip())
+            if request.form.get("playlist_visibility") in ["True", "False"]:
+                playlist_visibility = bool(request.form.get("playlist_visibility").strip())
 
-        # Generate playlist args based on form responses
-        playlist_args = {
-            "name": playlist_name,
-            "public": playlist_visibility,
-            "collaborative": False,
-            "description": playlist_desc
-        }
+            # Generate playlist args based on form responses
+            playlist_args = {
+                "name": playlist_name,
+                "public": playlist_visibility,
+                "collaborative": False,
+                "description": playlist_desc
+            }
 
-        # Get user_id based on Spotipy object
-        user_id = sp.me()['id']
-        playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
-        
-        # Ensure new playlist was created
-        if not playlist_response:
-            raise RuntimeError("New playlist could not be created")
+            # Get user_id based on Spotipy object
+            user_id = sp.me()['id']
+            playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
+            
+            # Ensure new playlist was created
+            if not playlist_response:
+                raise RuntimeError("New playlist could not be created")
 
-        # Get playlist_uri (similar to id) of new playlist
-        playlist_uri = playlist_response['uri']
-        try:
-            sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
-        except Exception as str_error:
-            print("playlist cover not uploaded.")
-            print(str_error)
-            pass
+            # Get playlist_uri (similar to id) of new playlist
+            playlist_uri = playlist_response['uri']
+            try:
+                sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
+            except Exception as str_error:
+                print("playlist cover not uploaded.")
+                print(str_error)
+                pass
 
-        tracks = results['tracks']['items']
-        # print(results)
-        
-        if results['tracks']['next']:
-            results = sp.next(results['tracks'])
+            tracks = results['tracks']['items']
             # print(results)
-            tracks.extend(results['items'])
-
-            while results['next']:
-                results = sp.next(results)
+            
+            if results['tracks']['next']:
+                results = sp.next(results['tracks'])
                 # print(results)
                 tracks.extend(results['items'])
-        
-        num_bins = 100
 
-        # Tracks Data (uri, name, artists)
-        tracks_data = []
-        added_songs = []
-        not_added = []    
+                while results['next']:
+                    results = sp.next(results)
+                    # print(results)
+                    tracks.extend(results['items'])
+            
+            num_bins = 100
 
-        for track in tracks:
-            if 'track' in track and track['track'] and 'uri' in track['track'] and track['track']['uri']:
-                tracks_data.append(
-                    {
-                        'uri': track['track']['uri'],
-                        'name': track['track']['name'],
-                        'artist': track['track']['artists'][0]['name']
-                    }
-                )
+            # Tracks Data (uri, name, artists)
+            tracks_data = []
+            added_songs = []
+            not_added = []    
 
-        # If there is at least one element in tracks_data
-        if not len(tracks_data) == 0:
-            # Keep a list of added track_uris
-            temp_track_uris = []
-
-            while not len(tracks_data) == 0:
-                this_uri = tracks_data[0]['uri']
-
-                if "spotify:local" in this_uri:
-                    not_added.append(this_uri)
-                
-                else:
-                    temp_track_uris.append(this_uri)
-                    added_songs.append(
+            for track in tracks:
+                if 'track' in track and track['track'] and 'uri' in track['track'] and track['track']['uri']:
+                    tracks_data.append(
                         {
-                            'name': tracks_data[0]['name'],
-                            'artist': tracks_data[0]['artist']
+                            'uri': track['track']['uri'],
+                            'name': track['track']['name'],
+                            'artist': track['track']['artists'][0]['name']
                         }
                     )
 
-                tracks_data.pop(0)
+            # If there is at least one element in tracks_data
+            if not len(tracks_data) == 0:
+                # Keep a list of added track_uris
+                temp_track_uris = []
 
-                if len(temp_track_uris) == num_bins or len(tracks_data) == 0: 
-                    for try_count in range(0, 6):  # try 6 times
-                        try:
-                            sp.user_playlist_add_tracks(user_id, playlist_uri, temp_track_uris)
-                            break
-                        except Exception as str_error:
-                            print(str_error)
-                            if try_count == 5:
-                                return render_template("link.html", error=str_error)
-                                raise RuntimeError("Error while adding tracks.")
-                            sleep(1)
-                            pass
+                while not len(tracks_data) == 0:
+                    this_uri = tracks_data[0]['uri']
+
+                    if "spotify:local" in this_uri:
+                        yield("0A3B0" + str(this_uri))
+                        # not_added.append(this_uri)
                     
-                    temp_track_uris.clear()
+                    else:
+                        temp_track_uris.append(this_uri)
+                        # added_songs.append(
+                        #     {
+                        #         'name': tracks_data[0]['name'],
+                        #         'artist': tracks_data[0]['artist']
+                        #     }
+                        # )
+                        yield("0A3B1" + tracks_data[0]['name'] +
+                                "0B4C" + tracks_data[0]['artist'])
 
-        return render_template("result.html", origin="Import By Link", added_songs=added_songs, not_added=not_added)
+                    tracks_data.pop(0)
+
+                    if len(temp_track_uris) == num_bins or len(tracks_data) == 0: 
+                        for try_count in range(0, 6):  # try 6 times
+                            try:
+                                sp.user_playlist_add_tracks(user_id, playlist_uri, temp_track_uris)
+                                break
+                            except Exception as str_error:
+                                print(str_error)
+                                if try_count == 5:
+                                    return render_template("link.html", error=str_error)
+                                    raise RuntimeError("Error while adding tracks.")
+                                sleep(1)
+                                pass
+                        
+                        temp_track_uris.clear()
+
+        songs_string = generate()
+        return Response(stream_with_context(stream_template("result2.html", origin="Import By Link", songs_string=songs_string)))
 
     else:
         return render_template("link.html")

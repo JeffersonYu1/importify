@@ -1,8 +1,8 @@
-function loading_message()
+function readyMessage()
 {
-    message = document.querySelector("#display_message");
-    message.innerHTML = "Playlists with more than 100 songs may have longer loading times.&#10;Thanks for your patience :)";
-    message.style.display = "inline";
+    message = document.querySelector("#status_message");
+    if (message != null)
+    {
+        message.innerHTML = "Complete!";
+    }    
 }
-
-var $table = $('#resultTable')
