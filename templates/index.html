@@ -6,7 +6,7 @@
 
 {% block menu_items %}
     <a class="nav-item nav-link active" href="/"><span class="sr-only">Home</span></a>
-    {% if session.response_data %}
+    {% if session.response_data and session.status|string() == "active"|string() %}
         <a class="nav-item nav-link" href="/text">Import By Text</a>
         <a class="nav-item nav-link" href="/link">Import By Link</a>
         <a class="nav-item nav-link" href="/info">Info</a>
@@ -20,7 +20,7 @@
 {% block main %}
     <h1>importify | Home</h1>
     <p>Import playlists into Spotify.</p>
-    {% if session.response_data %}
+    {% if session.response_data and session.status|string() == "active"|string() %}
         <p><a href="/text">Import By Text</a></p>
         <p><a href="/link">Import By Link</a></p>
         <p>Import From YouTube (coming soon!)</p>
