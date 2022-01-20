@@ -87,9 +87,14 @@
 
                             <div id="existingPlaylistForm" style="display:none;">
                                 <select class="form-select mx-auto my-1" name="existing_playlist_selector">
-                                    <option disabled="" selected="">Select Playlist</option>
-                                    <option value="PLAYLISTID1">Playlist 1</option>
-                                    <option value="PLAYLISTID2">Playlist 2</option>
+                                    {% if user_playlists %}
+                                        <option disabled="" selected="">Select Playlist</option>
+                                        {% for playlist in user_playlists %}
+                                            <option value="{{playlist.uri}}">{{playlist.name}}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option disabled="" selected="" value="none">No Existing Playlists Found.</option>
+                                    {% endif %}
                                 </select>
                             </div>                        
                                             
