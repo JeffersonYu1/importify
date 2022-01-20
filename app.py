@@ -152,48 +152,60 @@ def import_by_link():
             except Exception as str_error:
                 return render_template("link.html", error=str_error)
             
-            # Original playlist data (may be written if user has specifications)
-            playlist_name = html.unescape(results['name'])
-            playlist_desc = html.unescape(results['description'])
-            playlist_visibility = results['public']
-            playlist_cover_url = results['images'][0]['url']     
-            
-            # Get form data for playlist        
-            if request.form.get("playlist_name"):
-                playlist_name = request.form.get("playlist_name")
-            playlist_name.strip()
-
-            if request.form.get("playlist_desc"):
-                playlist_desc = request.form.get("playlist_desc")
-            playlist_desc.strip()
-
-            if request.form.get("playlist_visibility") in ["True", "False"]:
-                playlist_visibility = bool(request.form.get("playlist_visibility").strip())
-
-            # Generate playlist args based on form responses
-            playlist_args = {
-                "name": playlist_name,
-                "public": playlist_visibility,
-                "collaborative": False,
-                "description": playlist_desc
-            }
-
             # Get user_id based on Spotipy object
             user_id = sp.me()['id']
-            playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
-            
-            # Ensure new playlist was created
-            if not playlist_response:
-                raise RuntimeError("New playlist could not be created")
 
-            # Get playlist_uri (similar to id) of new playlist
-            playlist_uri = playlist_response['uri']
-            try:
-                sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
-            except Exception as str_error:
-                print("playlist cover not uploaded.")
-                print(str_error)
-                pass
+            destinationSelect = request.form.get('destinationRadioOption')
+            if destinationSelect is None:
+                destinationSelect = '0'
+
+            # New Playlist
+            if destinationSelect == '1':
+                playlist_uri = request.form.get('existing_playlist_selector')
+                # print(playlist_uri)
+
+            else:
+                # Original playlist data (may be written if user has specifications)
+                playlist_name = html.unescape(results['name'])
+                playlist_desc = html.unescape(results['description'])
+                playlist_visibility = results['public']
+                playlist_cover_url = results['images'][0]['url']     
+                
+                # Get form data for playlist        
+                if request.form.get("playlist_name"):
+                    playlist_name = request.form.get("playlist_name")
+                playlist_name.strip()
+
+                if request.form.get("playlist_desc"):
+                    playlist_desc = request.form.get("playlist_desc")
+                playlist_desc.strip()
+
+                if request.form.get("playlist_visibility") in ["True", "False"]:
+                    playlist_visibility = bool(request.form.get("playlist_visibility").strip())
+
+                # Generate playlist args based on form responses
+                playlist_args = {
+                    "name": playlist_name,
+                    "public": playlist_visibility,
+                    "collaborative": False,
+                    "description": playlist_desc
+                }
+
+                playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
+                
+                # Ensure new playlist was created
+                if not playlist_response:
+                    raise RuntimeError("New playlist could not be created")
+
+                # Get playlist_uri (similar to id) of new playlist
+                playlist_uri = playlist_response['uri']
+                try:
+                    sp.playlist_upload_cover_image(playlist_uri, base64.b64encode(requests.get(playlist_cover_url).content))
+                except Exception as str_error:
+                    print("playlist cover not uploaded.")
+                    print(str_error)
+                    pass
+
 
             tracks = results['tracks']['items']
             # print(results)
@@ -269,7 +281,34 @@ def import_by_link():
         return Response(stream_with_context(stream_template("result2.html", origin="Import By Link", songs_string=songs_string)))
 
     else:
-        return render_template("link.html")
+        user_playlists = []
+
+        try:
+            # Make Spotipy object with access token
+            sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
+
+            # Print user_id
+            user_id = sp.me()['id']
+            # print(user_id)
+
+            # Get current user playlists
+            results = sp.current_user_playlists(limit=50)
+            # print(results)
+            # for i, item in enumerate(results['items']):
+            #     print("%d %s" % (i, item['name']))
+            
+            for item in results['items']:
+                if item.get('owner').get('id') == user_id:
+                    user_playlists.append({
+                        'name': item.get('name'),
+                        'uri': item.get('uri')
+                    })
+            # print(user_playlists)
+
+            return render_template("link.html", user_playlists=user_playlists)
+        except Exception as str_error:
+            print(str_error)
+            return render_template("link.html", error=str_error)
 
 
 @app.route("/text", methods=["GET", "POST"])

@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="/static/favicon.ico">
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="/static/scripts.js"></script>
         
     {% block customScripts %}{% endblock %}
@@ -22,7 +22,7 @@
 <body onload="readyMessage()">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand spotify-green" href="/">importify</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
@@ -32,13 +32,13 @@
         </div>
     </nav>
 
-    {% if get_flashed_messages() %}
+    <!-- {% if get_flashed_messages() %}
     <header>
         <div class="alert alert-primary border text-center" role="alert">
             {{ get_flashed_messages() | join(" ") }}
         </div>
     </header>
-    {% endif %}
+    {% endif %} -->
 
     <main class="container p-5">
         {% block main %}{% endblock %}
