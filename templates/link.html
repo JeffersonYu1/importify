@@ -12,6 +12,10 @@
     <a class="nav-item nav-link" href="/logout">Logout</a>
 {% endblock %}
 
+{% block customScripts %}
+    <script src="/static/scripts_by.js"></script>
+{% endblock %}
+
 {% block main %}
     <h1>importify | Import By Link</h1>
     <br>
@@ -25,39 +29,76 @@
     <p id="instructions">
         Import a public playlist into your own library with a Spotify playlist link.
         <br>
-        Format: https://open.spotify.com/playlist/PLAYLIST-ID
     </p>
 
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-8">
-                <div class="card text-center mx-auto" style="width:100%">
-                    <div class="card-body">
-                        <form action="/link" method="post">
+    <form action="/link" method="post">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-6">
+                    <div class="card text-center mx-auto" style="width:100%">
+                        <div class="card-header">
+                            <p class="mb-0">
+                                Source (From)
+                            </p>
+                        </div>
+
+                        <div class="card-body">
                             <div class="form-group">
+                                <p>Format: https://open.spotify.com/playlist/PLAYLIST-ID</p>
                                 <input type="text" style="width:100%" class="form-control mx-auto my-1" id="playlist_link" name="playlist_link" placeholder="Link of Spotify Playlist to Import to Personal Library">
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="form-group">
-                                <input type="text" style="width:100%" class="form-control mx-auto my-1" id="playlist_name" name="playlist_name" placeholder="New Playlist Name (optional)">
+                <div class="col-12 col-lg-6">
+                    <div class="card text-center mx-auto" style="width:100%">
+                        <div class="card-header">
+                            <p class="mb-0">
+                                Destination (To)
+                            </p>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="destinationRadioOption" id="inlineRadio1" value="0" checked>
+                                <label class="form-check-label" for="inlineRadio1">New Playlist</label>
                             </div>
-                    
-                            <div class="form-group">
-                                <textarea style="width:100%" class="form-control mx-auto my-1"  id="playlist_desc" name="playlist_desc" placeholder="New Playlist Description (optional)" rows="2">{% if error %}{{error.playlist_desc}}{% endif %}</textarea>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="destinationRadioOption" id="inlineRadio2" value="1">
+                                <label class="form-check-label" for="inlineRadio2">Existing Playlist</label>
                             </div>
-                    
-                            <select class="form-select mx-auto my-1" name="playlist_visibility">
-                                <option disabled="" selected="">New Playlist Visibility</option>
-                                <option value="True">Public</option>
-                                <option value="False">Private</option>
-                            </select>
+
+                            <div id="newPlaylistForm">
+                                <div class="form-group">
+                                    <input type="text" style="width:100%" class="form-control mx-auto my-1" id="playlist_name" name="playlist_name" placeholder="New Playlist Name (optional)">
+                                </div>
+                        
+                                <div class="form-group">
+                                    <textarea style="width:100%" class="form-control mx-auto my-1"  id="playlist_desc" name="playlist_desc" placeholder="New Playlist Description (optional)" rows="2">{% if error %}{{error.playlist_desc}}{% endif %}</textarea>
+                                </div>
+                        
+                                <select class="form-select mx-auto my-1" name="playlist_visibility">
+                                    <option disabled="" selected="">New Playlist Visibility</option>
+                                    <option value="True">Public</option>
+                                    <option value="False">Private</option>
+                                </select>
+                            </div>
+
+                            <div id="existingPlaylistForm" style="display:none;">
+                                <select class="form-select mx-auto my-1" name="existing_playlist_selector">
+                                    <option disabled="" selected="">Select Playlist</option>
+                                    <option value="PLAYLISTID1">Playlist 1</option>
+                                    <option value="PLAYLISTID2">Playlist 2</option>
+                                </select>
+                            </div>                        
                                             
                             <button type="submit" class="btn spotify-green-button" style="width:100%">Import!</button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
     
 {% endblock %}
