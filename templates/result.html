@@ -1,5 +1,15 @@
 {% extends "layout.html" %}
 
+<!-- {% block customScripts %}
+    <link rel="stylesheet" href="/static/bootstrap-table.min.css">
+
+    <script src="/static/tableExport.min.js"></script>
+    <script src="/static/jspdf.min.js"></script>
+    <script src="/static/jspdf.plugin.autotable.js"></script>
+    <script src="/static/bootstrap-table.min.js"></script>
+    <script src="/static/bootstrap-table-export.min.js"></script>
+{% endblock %} -->
+
 {% block title %}
     Import Result
 {% endblock %}
@@ -12,71 +22,59 @@
     <a class="nav-item nav-link" href="/logout">Logout</a>
 {% endblock %}
 
+
 {% block main %}
     <h1>importify | {{origin}} Result</h1>
     <br>
+    <p id="status_message" class="status_message" style="color:blue;">Playlists with more than 100 songs may have longer loading times. Thanks for your patience :)</p>
+    <br> 
 
-    <div id="accordion">
-        <div class="card">
-            <div class="card-header" id="headingOne">
-                <h5 class="mb-0">
-                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    Not Added Songs
-                    </button>
-                </h5>
+    
+    <div class="accordion" id="resultAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Import Details
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#resultAccordion">
+            <div class="accordion-body">
+                <table id="resultTable"
+                class="table table-striped">
+
+                    <thead>
+                        <tr>
+                            <th scope="col" data-field="index">#</th>
+                            <th scope="col" data-field="title" data-filter-control="input">Title</th>
+                            <th scope="col" data-field="artist" data-filter-control="input">Artist</th>
+                            <th scope="col" data-field="select" data-filter-control="select">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set counter = namespace(value=1) %}
+                        {% for item in songs_string %}
+                            {% if "0A3B0" in item %}
+                                <tr>
+                                    <th scope="row"></th>
+                                    <td>{{item[5:]}}</td>
+                                    <td></td>
+                                    <td>Not Added</td>
+                                </tr>
+                            {% elif "0A3B1" in item %}
+                                <tr>
+                                    <th scope="row">{{counter.value}}</th>
+                                    {% set tempList = item.split("0B4C") %}
+                                    <td>{{tempList[0][5:]}}</td>
+                                    <td>{{tempList[1]}}</td>
+                                    <td>Added</td>
+                                </tr>
+                            {% set counter.value = counter.value + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        
-            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
-                <div class="card-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Line</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in not_added %}
-                            <tr>
-                                <th scope="row">{{loop.index}}</th>
-                                <td>{{item}}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header" id="headingTwo">
-                <h5 class="mb-0">
-                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                    Added Songs
-                    </button>
-                </h5>
-            </div>
-            <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
-                <div class="card-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Track</th>
-                            <th scope="col">Artist</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for song in added_songs %}
-                            <tr>
-                                <th scope="row">{{loop.index}}</th>
-                                <td>{{song.name}}</td>
-                                <td>{{song.artist}}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>    
-                </div>
-            </div>
+          </div>
         </div>
     </div>
 {% endblock %}

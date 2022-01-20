@@ -278,7 +278,7 @@ def import_by_link():
                         temp_track_uris.clear()
 
         songs_string = generate()
-        return Response(stream_with_context(stream_template("result2.html", origin="Import By Link", songs_string=songs_string)))
+        return Response(stream_with_context(stream_template("result.html", origin="Import By Link", songs_string=songs_string)))
 
     else:
         user_playlists = []
@@ -427,7 +427,7 @@ def import_by_text():
                     paste_list.pop(0)
 
         songs_string = generate()
-        return Response(stream_with_context(stream_template("result2.html", origin="Import By Text", songs_string=songs_string)))
+        return Response(stream_with_context(stream_template("result.html", origin="Import By Text", songs_string=songs_string)))
 
     else:
         return render_template("text.html")
