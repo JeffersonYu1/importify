@@ -25,7 +25,7 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 
 # Server-side Parameters
 REDIRECT_URI = "{}/callback/q".format(os.environ.get("SPOTIPY_REDIRECT_URL"))
-SCOPE = "user-library-read user-library-modify playlist-modify-private playlist-modify-public ugc-image-upload"
+SCOPE = "user-library-read user-library-modify playlist-modify-private playlist-modify-public ugc-image-upload playlist-read-collaborative playlist-read-private"
 SHOW_DIALOG_bool = True
 
 auth_query_parameters = {
@@ -316,54 +316,74 @@ def import_by_link():
 def import_by_text():
     if request.method == "POST":
         def generate():
-            # Make Spotipy object with access token
+            # Create Spotipy object using Access Token
             sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
 
-            # Get form data for playlist
-            playlist_name = request.form.get("playlist_name")
-            if not playlist_name:
-                playlist_name = "importify playlist"
-            playlist_name.strip()
+            # Get user_id using created Spotipy object
+            user_id = sp.me()['id']
 
-            playlist_desc = request.form.get("playlist_desc")
-            if not playlist_desc:
-                playlist_desc = "playlist created with importify"
-            playlist_desc.strip()
-
+            # Get list of desired songs from form
             playlist_paste = request.form.get("playlist_paste")
             if not playlist_paste:
                 playlist_paste = ""
             playlist_paste.strip()
 
-            playlist_visibility = request.form.get("playlist_visibility")
-            if playlist_visibility not in ["True", "False", True, False]:
-                playlist_visibility = "False"
-            bool(playlist_visibility.strip())
+            # Check whether the import destination is a new or existing playlist
+            destinationSelect = request.form.get('destinationRadioOption')
+            if destinationSelect is None:
+                destinationSelect = '0'
 
-            # Generate playlist args based on form responses
-            playlist_args = {
-                "name": playlist_name,
-                "public": playlist_visibility,
-                "collaborative": False,
-                "description": playlist_desc
-            }
+            # If the desired destination is an existing playlist
+            if destinationSelect == '1':
+                playlist_uri = request.form.get('existing_playlist_selector')
+                # print(playlist_uri)
 
-            # Get user_id based on Spotipy object
-            user_id = sp.me()['id']
-            playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
-            
-            # Ensure new playlist was created
-            if not playlist_response:
-                raise RuntimeError("New playlist could not be created")
+            # If the desired destination is a new playlist
+            else:
+                # Get desired playlist name from form
+                playlist_name = request.form.get("playlist_name")
+                if not playlist_name:
+                    playlist_name = "importify playlist"
+                playlist_name.strip()
+                
+                # Get desired playlist description from form
+                playlist_desc = request.form.get("playlist_desc")
+                if not playlist_desc:
+                    playlist_desc = "playlist created with importify"
+                playlist_desc.strip()
 
-            # Get playlist_uri (similar to id) of playlist
-            playlist_uri = playlist_response['uri']
+                # Get desired playlist visibility
+                playlist_visibility = request.form.get("playlist_visibility")
+                if playlist_visibility not in ["True", "False", True, False]:
+                    playlist_visibility = "False"
+                bool(playlist_visibility.strip())
+
+                # Generate playlist args based on form responses
+                playlist_args = {
+                    "name": playlist_name,
+                    "public": playlist_visibility,
+                    "collaborative": False,
+                    "description": playlist_desc
+                }
+
+                # Create new playlist
+                playlist_response = sp.user_playlist_create(user_id, playlist_args["name"], public=playlist_args["public"], collaborative=playlist_args["collaborative"], description=playlist_args["description"])
+                
+                # Ensure new playlist was created
+                if not playlist_response:
+                    raise RuntimeError("New playlist could not be created")
+
+                # Get playlist_uri (similar to id) of playlist
+                playlist_uri = playlist_response['uri']
             
             # Convert pasted song data into array
             paste_list = playlist_paste.splitlines()
+
+            # Initialize arrays
             added_songs = []
             not_added = []
 
+            # Number of songs to add per request to Spotify API
             num_bins = 100
 
             # If there is at least one line in the paste
@@ -430,7 +450,34 @@ def import_by_text():
         return Response(stream_with_context(stream_template("result.html", origin="Import By Text", songs_string=songs_string)))
 
     else:
-        return render_template("text.html")
+        user_playlists = []
+
+        try:
+            # Make Spotipy object with access token
+            sp = spotipy.Spotify(auth=session["response_data"]["access_token"])
+
+            # Print user_id
+            user_id = sp.me()['id']
+            # print(user_id)
+
+            # Get current user playlists
+            results = sp.current_user_playlists(limit=50)
+            # print(results)
+            # for i, item in enumerate(results['items']):
+            #     print("%d %s" % (i, item['name']))
+            
+            for item in results['items']:
+                if item.get('owner').get('id') == user_id:
+                    user_playlists.append({
+                        'name': item.get('name'),
+                        'uri': item.get('uri')
+                    })
+            # print(user_playlists)
+
+            return render_template("text.html", user_playlists=user_playlists)
+        except Exception as str_error:
+            print(str_error)
+            return render_template("text.html", error=str_error)
 
 
 @app.route("/login")
