@@ -26,6 +26,7 @@ $(document).ready(function(){
             valid = false;
             $("#error_message").html("Invalid playlist URL.");
             $("#error_message").css("display", "inline");
+            document.getElementById("error_message").scrollIntoView();
             return;
         }        
         
@@ -35,6 +36,7 @@ $(document).ready(function(){
             valid = false;
             $("#error_message").html("No destination playlist selected.");
             $("#error_message").css("display", "inline");
+            document.getElementById("error_message").scrollIntoView();
             return;
         }
 
@@ -43,6 +45,7 @@ $(document).ready(function(){
             valid = false;
             $("#error_message").html("Source is empty or invalid.");
             $("#error_message").css("display", "inline");
+            document.getElementById("error_message").scrollIntoView();
             return;
         }
         
@@ -51,4 +54,3 @@ $(document).ready(function(){
         }
     });
 });
-
