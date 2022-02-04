@@ -1,22 +1,28 @@
 # importify
 
 Created by Fu-Yao (Jefferson) Yu. Winter 2021 Personal Project.
+
 Web app to ease creation of Spotify playlists by importing from other streaming applications or users' playlists.
 
 ## About
 ### Motivation
 This project began as a [CS50x](https://cs50.harvard.edu/x/) final project. It is difficult to import playlists and songs from external applications into Spotify, as well as to copy other users' playlists into a personal library to make modifications. As a result, this project was built to alleviate that difficulty. 
+
 After the course, the site functionality was improved, such as by adding the option to import to existing playlists, allowing real-time front-end updates for the status of importing, etc. Additioanlly, the project was deployed via Heroku to [https://importify.herokuapp.com](https://importify.herokuapp.com).
 
 ### Access
-Currently, importify is awaiting approval from Spotify for a quota extension request. Once approved, importify will be accessible to all public Spotify users. Until then, you may [sign up for importify access here.](https://forms.gle/xY4DoyqH7o9SVLYM6). (The webpage is openly viewable without signup, but the importing functionality will not work.)
+Currently, importify is awaiting approval from Spotify for a quota extension request. Once approved, importify will be accessible to all public Spotify users. Until then, you may [sign up for importify access here](https://forms.gle/xY4DoyqH7o9SVLYM6). (The webpage is openly viewable without signup, but the importing functionality will not work.)
 
 ### Features
 Using importify, users can log in to their Spotify accounts to import playlists by pasting track names into a text box, or by providing a Spotify playlist link to copy. 
 
 For instance,
 
+![Screenshot 2022-02-03 at 18-15-44 Import By Link importify](https://user-images.githubusercontent.com/43518772/152453647-5724debf-358f-48f6-9025-fe027166c924.png)
+
 and
+
+![Screenshot 2022-02-03 at 18-15-36 Import By Text importify](https://user-images.githubusercontent.com/43518772/152453646-1e155cca-cee2-4f88-beed-7a875b7a01ea.png)
 
 
 ## ReadMe from Version 1.0 (Original CS50x Project)
