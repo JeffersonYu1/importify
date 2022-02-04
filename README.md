@@ -19,15 +19,15 @@ For instance,
 and
 
 
-#### ReadMe from Version 1.0 (Original CS50x Project)
+## ReadMe from Version 1.0 (Original CS50x Project)
 Version 1.0 Video Demo: https://www.youtube.com/watch?v=PoNl7INLp-E
 
-##### Steps
+### Steps
 * This project was built using the VSCode IDE. At first, I considered using the CS50 IDE because of my familiarity with it, but I wanted to challenge myself and explore the an industry-standard environment.
 * I first set up VSCode by downloading and installing extensions for the languages I would be programming in, such as Python, HTML, and CSS. I then installed Python and set up a virtual environment for the project.
 * From there, I installed dependencies from pip such as Flask. I tested Flask by creating a sample index.html page and having a basic redirect if a GET request was made. 
 
-##### Files
+### Files
 * The "importspotify" folder is dedicated for the virtual environment setup.
 * The "static" folder holds static files for webpage display, including the JS and CSS files that are linked. "style.css" was implemented by me, while the other files. such as "bootstrap.min.css" or "jquery-3.6.0.min.js", are downloaded from the internet.
 * The "templates" folder holds template files for webpages. All of the other .html files are extended from the layout.html template, as there are many shared elements, such as the Navbar and Footer, that are common across all pages of the site.
@@ -43,4 +43,4 @@ Version 1.0 Video Demo: https://www.youtube.com/watch?v=PoNl7INLp-E
 * [CS50x](https://cs50.harvard.edu/x/)
 * [Spotipy](https://spotipy.readthedocs.io/en/2.19.0/) (Python library for Spotify Web API)
 * [Spotify Authorization Flow Guide](https://github.com/drshrey/spotify-flask-auth-example)
-* [Spotify API provided by Spotify for Developers] (https://developer.spotify.com/documentation/web-api/)
+* [Spotify API provided by Spotify for Developers](https://developer.spotify.com/documentation/web-api/)
