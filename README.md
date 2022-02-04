@@ -15,19 +15,22 @@ Currently, importify is awaiting approval from Spotify for a quota extension req
 Using importify, users can log in to their Spotify accounts to import playlists by pasting track names into a text box, or by providing a Spotify playlist link to copy. 
 
 For instance,
+![Screenshot 2022-02-03 at 18-15-44 Import By Link importify](https://user-images.githubusercontent.com/43518772/152453647-5724debf-358f-48f6-9025-fe027166c924.png)
 
 and
 
+![Screenshot 2022-02-03 at 18-15-36 Import By Text importify](https://user-images.githubusercontent.com/43518772/152453646-1e155cca-cee2-4f88-beed-7a875b7a01ea.png)
 
-#### ReadMe from Version 1.0 (Original CS50x Project)
+
+## ReadMe from Version 1.0 (Original CS50x Project)
 Version 1.0 Video Demo: https://www.youtube.com/watch?v=PoNl7INLp-E
 
-##### Steps
+### Steps
 * This project was built using the VSCode IDE. At first, I considered using the CS50 IDE because of my familiarity with it, but I wanted to challenge myself and explore the an industry-standard environment.
 * I first set up VSCode by downloading and installing extensions for the languages I would be programming in, such as Python, HTML, and CSS. I then installed Python and set up a virtual environment for the project.
 * From there, I installed dependencies from pip such as Flask. I tested Flask by creating a sample index.html page and having a basic redirect if a GET request was made. 
 
-##### Files
+### Files
 * The "importspotify" folder is dedicated for the virtual environment setup.
 * The "static" folder holds static files for webpage display, including the JS and CSS files that are linked. "style.css" was implemented by me, while the other files. such as "bootstrap.min.css" or "jquery-3.6.0.min.js", are downloaded from the internet.
 * The "templates" folder holds template files for webpages. All of the other .html files are extended from the layout.html template, as there are many shared elements, such as the Navbar and Footer, that are common across all pages of the site.
